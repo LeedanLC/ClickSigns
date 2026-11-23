@@ -721,7 +721,7 @@ jobs:
 
           path = Path("src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java")
           source = path.read_text().replace("RenderType.entityTranslucentCull(texture)", "RenderTypes.entityTranslucent(texture)")
-          source = source.replace("import net.minecraft.client.renderer.rendertype.RenderType;", "import net.minecraft.client.renderer.rendertype.RenderType;\\nimport net.minecraft.client.renderer.rendertype.RenderTypes;")
+          source = source.replace("import net.minecraft.client.renderer.rendertype.RenderType;", "import net.minecraft.client.renderer.rendertype.RenderType;" + chr(10) + "import net.minecraft.client.renderer.rendertype.RenderTypes;")
           path.write_text(source)
 
           path = Path("src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModBlockTagProvider.java")
@@ -729,7 +729,7 @@ jobs:
           path.write_text(source)
 
           path = Path("src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModRecipeProvider.java")
-          source = path.read_text().replace("import net.minecraft.data.recipes.RecipeOutput;", "import net.minecraft.data.recipes.RecipeCategory;\\nimport net.minecraft.data.recipes.RecipeOutput;")
+          source = path.read_text().replace("import net.minecraft.data.recipes.RecipeOutput;", "import net.minecraft.data.recipes.RecipeCategory;" + chr(10) + "import net.minecraft.data.recipes.RecipeOutput;")
           path.write_text(source)
           PY
           chmod +x gradlew
