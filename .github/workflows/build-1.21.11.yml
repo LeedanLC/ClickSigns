@@ -190,13 +190,323 @@ jobs:
                   source = source.replace(marker, codec + marker)
               path.write_text(source)
           PY
-          chmod +x gradlew
-          ./gradlew :1.21.11-fabric:build --no-daemon --no-build-cache --rerun-tasks --stacktrace
+          python3 - <<'PY'
+          from pathlib import Path
 
-      - name: Upload ClickSigns jar
-        uses: actions/upload-artifact@v4
-        with:
-          name: ClickSigns-1.21.11-Fabric
-          path: |
-            1.21.11-fabric/build/libs/*.jar
-            !1.21.11-fabric/build/libs/*-dev.jar
+          Path("src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModBlockTagProvider.java").write_text(r'''package de.clickism.clicksigns.platform.fabric.datagen;
+
+import de.clickism.clicksigns.ClickSignsBlocks;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.BlockTags;
+import org.jspecify.annotations.NonNull;
+
+import java.util.concurrent.CompletableFuture;
+
+class ModBlockTagsProvider extends FabricTagProvider.BlockTagProvider {
+    public ModBlockTagsProvider(
+        FabricDataOutput output,
+        CompletableFuture<HolderLookup.Provider> registriesFuture
+    ) {
+        super(output, registriesFuture);
+    }
+
+    @Override
+    protected void addTags(HolderLookup.@NonNull Provider lookup) {
+        builder(BlockTags.MINEABLE_WITH_PICKAXE)
+            .add(ClickSignsBlocks.ROAD_SIGN.get());
+    }
+}
+''')
+
+          Path("src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModRecipeProvider.java").write_text(r'''package de.clickism.clicksigns.platform.fabric.datagen;
+
+import de.clickism.clicksigns.ClickSigns;
+import de.clickism.clicksigns.ClickSignsBlocks;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.data.recipes.RecipeProvider;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.CompletableFuture;
+
+class ModRecipeProvider extends FabricRecipeProvider {
+    public ModRecipeProvider(
+        FabricDataOutput output,
+        CompletableFuture<HolderLookup.Provider> registriesFuture
+    ) {
+        super(output, registriesFuture);
+    }
+
+    @Override
+    protected RecipeProvider createRecipeProvider(
+        HolderLookup.Provider registryLookup,
+        RecipeOutput output
+    ) {
+        return new RecipeProvider(registryLookup, output) {
+            @Override
+            public void buildRecipes() {
+                shaped(RecipeCategory.DECORATIONS, ClickSignsBlocks.ROAD_SIGN.get(), 4)
+                    .pattern("###")
+                    .pattern("#*#")
+                    .pattern("###")
+                    .define('#', Items.IRON_INGOT)
+                    .define('*', ItemTags.SIGNS)
+                    .unlockedBy(getHasName(Items.IRON_INGOT), has(Items.IRON_INGOT))
+                    .save(output);
+            }
+        };
+    }
+
+    @Override
+    public @NotNull String getName() {
+        return ClickSigns.identifier("recipes").toString();
+    }
+}
+''')
+
+          Path("src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModModelProvider.java").write_text(r'''package de.clickism.clicksigns.platform.fabric.datagen;
+
+import de.clickism.clicksigns.ClickSignsBlocks;
+import net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.minecraft.client.data.models.BlockModelGenerators;
+import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ModelTemplates;
+
+class ModModelProvider extends FabricModelProvider {
+    public ModModelProvider(FabricDataOutput output) {
+        super(output);
+    }
+
+    @Override
+    public void generateBlockStateModels(BlockModelGenerators generator) {
+        generator.createTrivialCube(ClickSignsBlocks.ROAD_SIGN.get());
+    }
+
+    @Override
+    public void generateItemModels(ItemModelGenerators generator) {
+        generator.generateFlatItem(
+            ClickSignsBlocks.ROAD_SIGN.get().asItem(),
+            ModelTemplates.FLAT_ITEM
+        );
+    }
+}
+''')
+
+          Path("src/main/java/de/clickism/clicksigns/entity/RoadSignBlockEntityRenderer.java").write_text(r'''package de.clickism.clicksigns.entity;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import de.clickism.clicksigns.render.RenderContext;
+import de.clickism.clicksigns.render.RoadSignRenderer;
+import de.clickism.clicksigns.sign.RoadSign;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import org.jspecify.annotations.NonNull;
+
+import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
+
+public class RoadSignBlockEntityRenderer implements BlockEntityRenderer<RoadSignBlockEntity> {
+    private RoadSign defaultRoadSign = null;
+
+    public RoadSignBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+    }
+
+    @Override
+    public void render(
+        @NonNull RoadSignBlockEntity entity,
+        float partialTicks,
+        @NonNull PoseStack stack,
+        @NonNull MultiBufferSource source,
+        int light,
+        int overlay
+    ) {
+        var roadSign = roadSignToRender(entity);
+        var direction = entity.getBlockState().getValue(HORIZONTAL_FACING);
+        var renderer = new RoadSignRenderer(
+            new RenderContext(stack, source, light, direction),
+            roadSign
+        );
+        renderer.render();
+    }
+
+    private RoadSign roadSignToRender(RoadSignBlockEntity entity) {
+        var roadSign = entity.roadSign();
+        if (roadSign == null) {
+            roadSign = getOrCreateDefault();
+        }
+        return roadSign;
+    }
+
+    private RoadSign getOrCreateDefault() {
+        if (defaultRoadSign == null) {
+            defaultRoadSign = RoadSign.createDefault();
+        }
+        return defaultRoadSign;
+    }
+}
+''')
+
+          Path("src/main/java/de/clickism/clicksigns/render/RenderContext.java").write_text(r'''package de.clickism.clicksigns.render;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
+import de.clickism.clickui.util.Util;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.core.Direction;
+import net.minecraft.util.FormattedCharSequence;
+
+import java.util.function.BiConsumer;
+
+public final class RenderContext {
+    private final PoseStack stack;
+    private final MultiBufferSource source;
+    private final int light;
+    private final Direction direction;
+    private final TextureRenderer textureRenderer;
+
+    public RenderContext(PoseStack stack, MultiBufferSource source, int light, Direction direction) {
+        this.stack = stack;
+        this.source = source;
+        this.light = light;
+        this.direction = direction;
+        this.textureRenderer = new TextureRenderer(this);
+    }
+
+    public PoseStack stack() {
+        return stack;
+    }
+
+    public MultiBufferSource source() {
+        return source;
+    }
+
+    public int light() {
+        return light;
+    }
+
+    public Direction direction() {
+        return direction;
+    }
+
+    public TextureRenderer textureRenderer() {
+        return textureRenderer;
+    }
+
+    public void withTranslation(float x, float y, float z, Runnable action) {
+        stack.translate(x, y, z);
+        action.run();
+        stack.translate(-x, -y, -z);
+    }
+
+    public void withFlip(float blockWidth, Runnable action) {
+        withPose(() -> {
+            stack.translate(blockWidth / 2, 0, 0);
+            rotate(Axis.YP, 180);
+            stack.translate(-blockWidth / 2, 0, 0);
+            action.run();
+        });
+    }
+
+    public void rotate(Axis axis, float degrees) {
+        stack.mulPose(axis.rotationDegrees(degrees));
+    }
+
+    public void withScale(float scale, Runnable action) {
+        withPose(() -> {
+            stack.scale(scale, scale, 1);
+            action.run();
+        });
+    }
+
+    public void withPose(Runnable action) {
+        stack.pushPose();
+        action.run();
+        stack.popPose();
+    }
+
+    public void withTextTransform(Font font, Runnable action) {
+        withPose(() -> {
+            rotate(Axis.YP, 180);
+            rotate(Axis.ZP, 180);
+            stack.translate(0, -font.lineHeight, 0);
+            action.run();
+        });
+    }
+
+    public void submit(
+        int order,
+        RenderType renderType,
+        BiConsumer<PoseStack.Pose, VertexConsumer> renderer
+    ) {
+        withTranslation(0, 0, order * RenderConstants.ELEMENT_STEP, () -> {
+            var buffer = source.getBuffer(renderType);
+            renderer.accept(stack.last(), buffer);
+        });
+    }
+
+    public void submitText(
+        int order,
+        float x,
+        float y,
+        FormattedCharSequence string,
+        boolean shadow,
+        Font.DisplayMode mode,
+        int lightCoords,
+        int color,
+        int backgroundColor,
+        int outlineColor
+    ) {
+        withTranslation(0, 0, -order * RenderConstants.ELEMENT_STEP, () -> {
+            var font = Util.font();
+            font.drawInBatch(
+                string,
+                x,
+                y,
+                color,
+                shadow,
+                stack.last().pose(),
+                source,
+                mode,
+                backgroundColor,
+                lightCoords
+            );
+        });
+    }
+}
+''')
+
+          Path("src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java").write_text(r'''package de.clickism.clicksigns.render;
+
+import de.clickism.clicksigns.ClickSigns;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.resources.Identifier;
+
+public class SignRenderPipelines {
+    private static final Identifier WHITE = ClickSigns.identifier("textures/misc/white.png");
+
+    public static RenderType baseRenderType(Identifier texture) {
+        return RenderType.entityTranslucentCull(texture);
+    }
+
+    public static RenderType elementRenderType(Identifier texture) {
+        return baseRenderType(texture);
+    }
+
+    public static RenderType colorRenderType() {
+        return baseRenderType(WHITE);
+    }
+}
+''')
+          PY
+          chmod +x gradlew
+          ./gradlew :1.21.11-fabric:build
