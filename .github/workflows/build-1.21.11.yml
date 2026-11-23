@@ -146,6 +146,26 @@ jobs:
               path = Path(file_name)
               source = path.read_text()
               source = source.replace("26.1", "26.2")
+              source = source.replace("net.fabricmc.fabric.api.creativetab.v1", "net.fabricmc.fabric.api.itemgroup.v1")
+              source = source.replace("CreativeModeTabEvents", "ItemGroupEvents")
+              source = source.replace("modifyOutputEvent", "modifyEntriesEvent")
+              source = source.replace("FabricPackOutput", "FabricDataOutput")
+              source = source.replace("FabricTagsProvider", "FabricTagProvider")
+              source = source.replace("FabricBlockLootSubProvider", "FabricBlockLootTableProvider")
+              source = source.replace("getOrCreateRawBuilder", "getOrCreateTagBuilder")
+              source = source.replace(".addElement(", ".add(")
+              source = source.replace(
+                  "BuiltInRegistries.BLOCK.getKey(ClickSignsBlocks.ROAD_SIGN.get())",
+                  "ClickSignsBlocks.ROAD_SIGN.get()"
+              )
+              source = source.replace(
+                  "net.fabricmc.fabric.api.client.datagen.v1.provider.FabricModelProvider",
+                  "net.fabricmc.fabric.api.datagen.v1.provider.FabricModelProvider"
+              )
+              source = source.replace("net.minecraft.client.data.models", "net.minecraft.data.models")
+              source = source.replace("serverboundPlay", "playC2S")
+              source = source.replace("clientboundPlay", "playS2C")
+              source = source.replace("PlayerLookup.level", "PlayerLookup.world")
               if path.name == "SignRenderPipelines.java":
                   source = source.replace("26.3", "26.4")
               if path.name == "UiUtil.java":
