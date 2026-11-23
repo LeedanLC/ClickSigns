@@ -127,6 +127,52 @@ jobs:
               'stonecutter active "1.21.11-fabric"'
           )
           stonecutter.write_text(text)
+
+          compat_files = [
+              "src/main/java/de/clickism/clicksigns/ui/UiUtil.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/FabricPlatform.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/FabricNetwork.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModBlockTagProvider.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModRecipeProvider.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModLootTableProvider.java",
+              "src/main/java/de/clickism/clicksigns/platform/fabric/datagen/ModModelProvider.java",
+              "src/main/java/de/clickism/clicksigns/entity/RoadSignBlockEntityRenderer.java",
+              "src/main/java/de/clickism/clicksigns/render/RenderContext.java",
+              "src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java",
+              "src/main/java/de/clickism/clicksigns/block/RoadSignBlock.java",
+          ]
+
+          for file_name in compat_files:
+              path = Path(file_name)
+              source = path.read_text()
+              source = source.replace("26.1", "26.2")
+              if path.name == "SignRenderPipelines.java":
+                  source = source.replace("26.3", "26.4")
+              if path.name == "UiUtil.java":
+                  source = source.replace(
+                      "net.minecraft.client.gui.GuiGraphicsExtractor",
+                      "net.minecraft.client.gui.GuiGraphics"
+                  )
+              if path.name == "RoadSignBlock.java":
+                  import re
+                  source = re.sub(
+                      r"\s*//\? if >= 1\.21\.1 && <26\.3 \{.*?\*///\?}",
+                      "",
+                      source,
+                      flags=re.S
+                  )
+                  marker = "    @Override\n    public BlockEntity newBlockEntity"
+                  codec = """    public static final MapCodec<RoadSignBlock> CODEC =
+        simpleCodec(RoadSignBlock::new);
+
+    @Override
+    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
+        return CODEC;
+    }
+
+"""
+                  source = source.replace(marker, codec + marker)
+              path.write_text(source)
           PY
           chmod +x gradlew
           ./gradlew :1.21.11-fabric:build --no-daemon --no-build-cache --rerun-tasks --stacktrace
