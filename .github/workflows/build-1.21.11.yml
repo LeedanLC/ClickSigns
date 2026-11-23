@@ -721,7 +721,7 @@ jobs:
           ''')
 
           path = Path("src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java")
-          source = path.read_text().replace("RenderType.entityTranslucentCull(texture)", "RenderTypes.entityTranslucent(texture)")
+          source = path.read_text().replace("RenderType.entityTranslucentCull(texture)", "RenderTypes.entityCutout(texture)")
           source = source.replace("import net.minecraft.client.renderer.rendertype.RenderType;", "import net.minecraft.client.renderer.rendertype.RenderType;" + chr(10) + "import net.minecraft.client.renderer.rendertype.RenderTypes;")
           path.write_text(source)
 
