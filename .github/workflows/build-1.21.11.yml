@@ -88,20 +88,26 @@ jobs:
 
               if path.name == "UiEventHandler.java":
                   source = source.replace(
-                      "//~ if <1.21.11 'extractRenderState' -> 'render'",
-                      "//~ if <26.1 'extractRenderState' -> 'render'"
+                      "//~ if < 1.21.11 'extractRenderState' -> 'render'",
+                      "//~ if < 26.1 'extractRenderState' -> 'render'"
                   )
 
               path.write_text(source)
+
+          ui = Path("src/main/java/de/clickism/clickui/render/UiGraphics.java")
+          print("UiGraphics port markers:")
+          for number, line in enumerate(ui.read_text().splitlines(), 1):
+              if number in (277, 326, 339, 352, 365) or "renderOutline" in line or "drawString" in line:
+                  print(f"{number}: {line}")
           PY
           chmod +x gradlew
-          ./gradlew :1.21.11-fabric:publishToMavenLocal --no-daemon --stacktrace
+          ./gradlew :1.21.11-fabric:publishToMavenLocal --no-daemon --no-build-cache --rerun-tasks --stacktrace
 
       - name: Build ClickSigns 1.21.11
         shell: bash
         run: |
           chmod +x gradlew
-          ./gradlew :1.21.11-fabric:build --no-daemon --stacktrace
+          ./gradlew :1.21.11-fabric:build --no-daemon --no-build-cache --rerun-tasks --stacktrace
 
       - name: Upload ClickSigns jar
         uses: actions/upload-artifact@v4
