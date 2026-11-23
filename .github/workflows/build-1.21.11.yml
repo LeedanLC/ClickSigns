@@ -159,15 +159,14 @@ jobs:
                   if start >= 0 and end >= 0:
                       source = source[:start] + source[end + len("    *///?}"):]
                   marker = "    @Override\n    public BlockEntity newBlockEntity"
-                  codec = """    public static final MapCodec<RoadSignBlock> CODEC =
-        simpleCodec(RoadSignBlock::new);
-
-    @Override
-    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
-    }
-
-"""
+                  codec = (
+                      "    public static final MapCodec<RoadSignBlock> CODEC =\n"
+                      "        simpleCodec(RoadSignBlock::new);\n\n"
+                      "    @Override\n"
+                      "    protected @NotNull MapCodec<? extends BaseEntityBlock> codec() {\n"
+                      "        return CODEC;\n"
+                      "    }\n\n"
+                  )
                   source = source.replace(marker, codec + marker)
               path.write_text(source)
           PY
