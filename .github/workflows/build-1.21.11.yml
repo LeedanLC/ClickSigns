@@ -154,13 +154,10 @@ jobs:
                       "net.minecraft.client.gui.GuiGraphics"
                   )
               if path.name == "RoadSignBlock.java":
-                  import re
-                  source = re.sub(
-                      r"\s*//\? if >= 1\.21\.1 && <26\.3 \{.*?\*///\?}",
-                      "",
-                      source,
-                      flags=re.S
-                  )
+                  start = source.find("    //? if >= 1.21.1 && <26.3 {")
+                  end = source.find("    *///?}", start)
+                  if start >= 0 and end >= 0:
+                      source = source[:start] + source[end + len("    *///?}"):]
                   marker = "    @Override\n    public BlockEntity newBlockEntity"
                   codec = """    public static final MapCodec<RoadSignBlock> CODEC =
         simpleCodec(RoadSignBlock::new);
