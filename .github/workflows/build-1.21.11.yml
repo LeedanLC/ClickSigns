@@ -735,3 +735,11 @@ jobs:
           PY
           chmod +x gradlew
           ./gradlew :1.21.11-fabric:build
+
+      - name: Upload ClickSigns jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClickSigns-1.21.11-Fabric
+          path: |
+            1.21.11-fabric/build/libs/*.jar
+            !1.21.11-fabric/build/libs/*-dev.jar
