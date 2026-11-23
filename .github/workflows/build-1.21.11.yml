@@ -106,6 +106,28 @@ jobs:
       - name: Build ClickSigns 1.21.11
         shell: bash
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          settings = Path("settings.gradle.kts")
+          lines = settings.read_text().splitlines()
+          keep = []
+          for line in lines:
+              stripped = line.strip()
+              if stripped.startswith("version(") and "1.21.11" not in stripped:
+                  continue
+              if "vcsVersion = " in line:
+                  line = '        vcsVersion = "1.21.11-fabric"'
+              keep.append(line)
+          settings.write_text("\n".join(keep) + "\n")
+
+          stonecutter = Path("stonecutter.gradle.kts")
+          text = stonecutter.read_text().replace(
+              'stonecutter active "26.3-fabric"',
+              'stonecutter active "1.21.11-fabric"'
+          )
+          stonecutter.write_text(text)
+          PY
           chmod +x gradlew
           ./gradlew :1.21.11-fabric:build --no-daemon --no-build-cache --rerun-tasks --stacktrace
 
