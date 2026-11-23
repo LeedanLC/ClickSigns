@@ -741,5 +741,5 @@ jobs:
         with:
           name: ClickSigns-1.21.11-Fabric
           path: |
-            1.21.11-fabric/build/libs/*.jar
-            !1.21.11-fabric/build/libs/*-dev.jar
+            versions/1.21.11-fabric/build/libs/*.jar
+            !versions/1.21.11-fabric/build/libs/*-dev.jar
