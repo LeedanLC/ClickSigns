@@ -76,14 +76,20 @@ jobs:
 
               if path.name == "UiGraphics.java":
                   source = source.replace(
+                      "//~ if < 1.21.11 '.outline' -> '.renderOutline'",
+                      "//~ if < 26.1 '.outline' -> '.renderOutline'"
+                  )
+                  source = source.replace(
+                      "//~ if < 1.21.11 '.text' -> '.drawString'",
+                      "//~ if < 26.1 '.text' -> '.drawString'"
+                  )
+                  source = source.replace(
+                      "//~ if < 1.21.11 '.extractTooltipBackground' -> '.renderTooltipBackground'",
+                      "//~ if < 26.1 '.extractTooltipBackground' -> '.renderTooltipBackground'"
+                  )
+                  source = source.replace(
                       "net.minecraft.client.renderer.RenderType",
                       "net.minecraft.client.renderer.rendertype.RenderType"
-                  )
-                  source = source.replace("graphics.outline(", "graphics.renderOutline(")
-                  source = source.replace("graphics.text(", "graphics.drawString(")
-                  source = source.replace(
-                      "TooltipRenderUtil.extractTooltipBackground",
-                      "TooltipRenderUtil.renderTooltipBackground"
                   )
 
               if path.name == "UiEventHandler.java":
@@ -93,12 +99,6 @@ jobs:
                   )
 
               path.write_text(source)
-
-          ui = Path("src/main/java/de/clickism/clickui/render/UiGraphics.java")
-          print("UiGraphics port markers:")
-          for number, line in enumerate(ui.read_text().splitlines(), 1):
-              if number in (277, 326, 339, 352, 365) or "renderOutline" in line or "drawString" in line:
-                  print(f"{number}: {line}")
           PY
           chmod +x gradlew
           ./gradlew :1.21.11-fabric:publishToMavenLocal --no-daemon --no-build-cache --rerun-tasks --stacktrace
