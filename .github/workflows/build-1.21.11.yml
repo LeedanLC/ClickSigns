@@ -720,6 +720,14 @@ jobs:
           }
           ''')
 
+          path = Path("src/main/java/de/clickism/clicksigns/render/element/PlateRenderer.java")
+          source = path.read_text()
+          source = source.replace(
+              "return RenderConstants.SURFACE_OFFSET;" + chr(10) + "    }",
+              "return RenderConstants.SURFACE_OFFSET + RenderConstants.ELEMENT_OFFSET;" + chr(10) + "    }"
+          )
+          path.write_text(source)
+
           path = Path("src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java")
           source = path.read_text().replace("RenderType.entityTranslucentCull(texture)", "RenderTypes.entityCutout(texture)")
           source = source.replace("import net.minecraft.client.renderer.rendertype.RenderType;", "import net.minecraft.client.renderer.rendertype.RenderType;" + chr(10) + "import net.minecraft.client.renderer.rendertype.RenderTypes;")
