@@ -512,196 +512,196 @@ jobs:
 
           Path("src/main/java/de/clickism/clicksigns/entity/RoadSignBlockEntityRenderer.java").write_text(r'''package de.clickism.clicksigns.entity;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import de.clickism.clicksigns.render.RenderContext;
-import de.clickism.clicksigns.render.RoadSignRenderer;
-import de.clickism.clicksigns.sign.RoadSign;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
-import net.minecraft.client.renderer.state.CameraRenderState;
-import net.minecraft.core.Direction;
-import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+          import com.mojang.blaze3d.vertex.PoseStack;
+          import de.clickism.clicksigns.render.RenderContext;
+          import de.clickism.clicksigns.render.RoadSignRenderer;
+          import de.clickism.clicksigns.sign.RoadSign;
+          import net.minecraft.client.renderer.SubmitNodeCollector;
+          import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+          import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+          import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+          import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+          import net.minecraft.client.renderer.state.CameraRenderState;
+          import net.minecraft.core.Direction;
+          import net.minecraft.world.phys.Vec3;
+          import org.jspecify.annotations.NonNull;
+          import org.jspecify.annotations.Nullable;
 
-import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
+          import static net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING;
 
-public class RoadSignBlockEntityRenderer
-    implements BlockEntityRenderer<RoadSignBlockEntity, RoadSignBlockEntityRenderer.RenderState>
-{
-    private RoadSign defaultRoadSign = null;
+          public class RoadSignBlockEntityRenderer
+              implements BlockEntityRenderer<RoadSignBlockEntity, RoadSignBlockEntityRenderer.RenderState>
+          {
+              private RoadSign defaultRoadSign = null;
 
-    public RoadSignBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
-    }
+              public RoadSignBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+              }
 
-    @Override
-    public void submit(
-        @NonNull RenderState state,
-        @NonNull PoseStack poseStack,
-        @NonNull SubmitNodeCollector submitNodeCollector,
-        @NonNull CameraRenderState camera
-    ) {
-        var renderer = new RoadSignRenderer(
+              @Override
+              public void submit(
+                  @NonNull RenderState state,
+                  @NonNull PoseStack poseStack,
+                  @NonNull SubmitNodeCollector submitNodeCollector,
+                  @NonNull CameraRenderState camera
+              ) {
+                  var renderer = new RoadSignRenderer(
             new RenderContext(poseStack, submitNodeCollector, state.lightCoords, state.direction),
             state.roadSign
-        );
-        renderer.render();
-    }
+                  );
+                  renderer.render();
+              }
 
-    @Override
-    public void extractRenderState(
-        @NonNull RoadSignBlockEntity blockEntity,
-        @NonNull RenderState state,
-        float partialTicks,
-        @NonNull Vec3 cameraPosition,
-        ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress
-    ) {
-        BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
-        state.roadSign = roadSignToRender(blockEntity);
-        state.direction = blockEntity.getBlockState().getValue(HORIZONTAL_FACING);
-    }
+              @Override
+              public void extractRenderState(
+                  @NonNull RoadSignBlockEntity blockEntity,
+                  @NonNull RenderState state,
+                  float partialTicks,
+                  @NonNull Vec3 cameraPosition,
+                  ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress
+              ) {
+                  BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
+                  state.roadSign = roadSignToRender(blockEntity);
+                  state.direction = blockEntity.getBlockState().getValue(HORIZONTAL_FACING);
+              }
 
-    @Override
-    public RenderState createRenderState() {
-        return new RenderState();
-    }
+              @Override
+              public RenderState createRenderState() {
+                  return new RenderState();
+              }
 
-    public static class RenderState extends BlockEntityRenderState {
-        private RoadSign roadSign;
-        private Direction direction;
-    }
+              public static class RenderState extends BlockEntityRenderState {
+                  private RoadSign roadSign;
+                  private Direction direction;
+              }
 
-    private RoadSign roadSignToRender(RoadSignBlockEntity entity) {
-        var roadSign = entity.roadSign();
-        if (roadSign == null) {
+              private RoadSign roadSignToRender(RoadSignBlockEntity entity) {
+                  var roadSign = entity.roadSign();
+                  if (roadSign == null) {
             roadSign = getOrCreateDefault();
-        }
-        return roadSign;
-    }
+                  }
+                  return roadSign;
+              }
 
-    private RoadSign getOrCreateDefault() {
-        if (defaultRoadSign == null) {
+              private RoadSign getOrCreateDefault() {
+                  if (defaultRoadSign == null) {
             defaultRoadSign = RoadSign.createDefault();
-        }
-        return defaultRoadSign;
-    }
-}
+                  }
+                  return defaultRoadSign;
+              }
+          }
           ''')
 
           Path("src/main/java/de/clickism/clicksigns/render/RenderContext.java").write_text(r'''package de.clickism.clicksigns.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
-import de.clickism.clickui.util.Util;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.core.Direction;
-import net.minecraft.util.FormattedCharSequence;
+          import com.mojang.blaze3d.vertex.PoseStack;
+          import com.mojang.blaze3d.vertex.VertexConsumer;
+          import com.mojang.math.Axis;
+          import de.clickism.clickui.util.Util;
+          import net.minecraft.client.gui.Font;
+          import net.minecraft.client.renderer.SubmitNodeCollector;
+          import net.minecraft.client.renderer.rendertype.RenderType;
+          import net.minecraft.core.Direction;
+          import net.minecraft.util.FormattedCharSequence;
 
-import java.util.function.BiConsumer;
+          import java.util.function.BiConsumer;
 
-public final class RenderContext {
-    private final PoseStack stack;
-    private final SubmitNodeCollector source;
-    private final int light;
-    private final Direction direction;
-    private final TextureRenderer textureRenderer;
+          public final class RenderContext {
+              private final PoseStack stack;
+              private final SubmitNodeCollector source;
+              private final int light;
+              private final Direction direction;
+              private final TextureRenderer textureRenderer;
 
-    public RenderContext(PoseStack stack, SubmitNodeCollector source, int light, Direction direction) {
-        this.stack = stack;
-        this.source = source;
-        this.light = light;
-        this.direction = direction;
-        this.textureRenderer = new TextureRenderer(this);
-    }
+              public RenderContext(PoseStack stack, SubmitNodeCollector source, int light, Direction direction) {
+                  this.stack = stack;
+                  this.source = source;
+                  this.light = light;
+                  this.direction = direction;
+                  this.textureRenderer = new TextureRenderer(this);
+              }
 
-    public PoseStack stack() {
-        return stack;
-    }
+              public PoseStack stack() {
+                  return stack;
+              }
 
-    public SubmitNodeCollector source() {
-        return source;
-    }
+              public SubmitNodeCollector source() {
+                  return source;
+              }
 
-    public int light() {
-        return light;
-    }
+              public int light() {
+                  return light;
+              }
 
-    public Direction direction() {
-        return direction;
-    }
+              public Direction direction() {
+                  return direction;
+              }
 
-    public TextureRenderer textureRenderer() {
-        return textureRenderer;
-    }
+              public TextureRenderer textureRenderer() {
+                  return textureRenderer;
+              }
 
-    public void withTranslation(float x, float y, float z, Runnable action) {
-        stack.translate(x, y, z);
-        action.run();
-        stack.translate(-x, -y, -z);
-    }
+              public void withTranslation(float x, float y, float z, Runnable action) {
+                  stack.translate(x, y, z);
+                  action.run();
+                  stack.translate(-x, -y, -z);
+              }
 
-    public void withFlip(float blockWidth, Runnable action) {
-        withPose(() -> {
+              public void withFlip(float blockWidth, Runnable action) {
+                  withPose(() -> {
             stack.translate(blockWidth / 2, 0, 0);
             rotate(Axis.YP, 180);
             stack.translate(-blockWidth / 2, 0, 0);
             action.run();
-        });
-    }
+                  });
+              }
 
-    public void rotate(Axis axis, float degrees) {
-        stack.mulPose(axis.rotationDegrees(degrees));
-    }
+              public void rotate(Axis axis, float degrees) {
+                  stack.mulPose(axis.rotationDegrees(degrees));
+              }
 
-    public void withScale(float scale, Runnable action) {
-        withPose(() -> {
+              public void withScale(float scale, Runnable action) {
+                  withPose(() -> {
             stack.scale(scale, scale, 1);
             action.run();
-        });
-    }
+                  });
+              }
 
-    public void withPose(Runnable action) {
-        stack.pushPose();
-        action.run();
-        stack.popPose();
-    }
+              public void withPose(Runnable action) {
+                  stack.pushPose();
+                  action.run();
+                  stack.popPose();
+              }
 
-    public void withTextTransform(Font font, Runnable action) {
-        withPose(() -> {
+              public void withTextTransform(Font font, Runnable action) {
+                  withPose(() -> {
             rotate(Axis.YP, 180);
             rotate(Axis.ZP, 180);
             stack.translate(0, -font.lineHeight, 0);
             action.run();
-        });
-    }
+                  });
+              }
 
-    public void submit(
-        int order,
-        RenderType renderType,
-        BiConsumer<PoseStack.Pose, VertexConsumer> renderer
-    ) {
-        source.order(order).submitCustomGeometry(stack, renderType, renderer::accept);
-    }
+              public void submit(
+                  int order,
+                  RenderType renderType,
+                  BiConsumer<PoseStack.Pose, VertexConsumer> renderer
+              ) {
+                  source.order(order).submitCustomGeometry(stack, renderType, renderer::accept);
+              }
 
-    public void submitText(
-        int order,
-        float x,
-        float y,
-        FormattedCharSequence string,
-        boolean shadow,
-        Font.DisplayMode mode,
-        int lightCoords,
-        int color,
-        int backgroundColor,
-        int outlineColor
-    ) {
-        withTranslation(0, 0, -RenderConstants.ELEMENT_STEP / 2, () -> {
+              public void submitText(
+                  int order,
+                  float x,
+                  float y,
+                  FormattedCharSequence string,
+                  boolean shadow,
+                  Font.DisplayMode mode,
+                  int lightCoords,
+                  int color,
+                  int backgroundColor,
+                  int outlineColor
+              ) {
+                  withTranslation(0, 0, -RenderConstants.ELEMENT_STEP / 2, () -> {
             source.order(order).submitText(
                 stack,
                 x,
@@ -714,9 +714,9 @@ public final class RenderContext {
                 backgroundColor,
                 outlineColor
             );
-        });
-    }
-}
+                  });
+              }
+          }
           ''')
 
           path = Path("src/main/java/de/clickism/clicksigns/render/SignRenderPipelines.java")
