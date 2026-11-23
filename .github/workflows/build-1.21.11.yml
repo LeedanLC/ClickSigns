@@ -70,20 +70,28 @@ jobs:
               "src/main/java/de/clickism/clickui/elements/input/Checkbox.java",
           ]
 
-          replacements = [
-              ("26.1", "1.21.11"),
-          ]
-
           for file_name in port_files:
               path = Path(file_name)
-              source = path.read_text()
-              for old, new in replacements:
-                  source = source.replace(old, new)
+              source = path.read_text().replace("26.1", "1.21.11")
+
               if path.name == "UiGraphics.java":
                   source = source.replace(
                       "net.minecraft.client.renderer.RenderType",
                       "net.minecraft.client.renderer.rendertype.RenderType"
                   )
+                  source = source.replace("graphics.outline(", "graphics.renderOutline(")
+                  source = source.replace("graphics.text(", "graphics.drawString(")
+                  source = source.replace(
+                      "TooltipRenderUtil.extractTooltipBackground",
+                      "TooltipRenderUtil.renderTooltipBackground"
+                  )
+
+              if path.name == "UiEventHandler.java":
+                  source = source.replace(
+                      "//~ if <1.21.11 'extractRenderState' -> 'render'",
+                      "//~ if <26.1 'extractRenderState' -> 'render'"
+                  )
+
               path.write_text(source)
           PY
           chmod +x gradlew
