@@ -59,6 +59,32 @@ jobs:
           deps.fabric_api=0.141.1+1.21.11
           deps.parchment=1.21.11:2025.12.20
           """)
+
+          port_files = [
+              "src/main/java/de/clickism/clickui/render/UiGraphics.java",
+              "src/main/java/de/clickism/clickui/UiEventHandler.java",
+              "src/main/java/de/clickism/clickui/event/events/KeyEvent.java",
+              "src/main/java/de/clickism/clickui/util/versioning/KeyUtil.java",
+              "src/main/java/de/clickism/clickui/elements/Button.java",
+              "src/main/java/de/clickism/clickui/elements/Image.java",
+              "src/main/java/de/clickism/clickui/elements/input/Checkbox.java",
+          ]
+
+          replacements = [
+              ("26.1", "1.21.11"),
+          ]
+
+          for file_name in port_files:
+              path = Path(file_name)
+              source = path.read_text()
+              for old, new in replacements:
+                  source = source.replace(old, new)
+              if path.name == "UiGraphics.java":
+                  source = source.replace(
+                      "net.minecraft.client.renderer.RenderType",
+                      "net.minecraft.client.renderer.rendertype.RenderType"
+                  )
+              path.write_text(source)
           PY
           chmod +x gradlew
           ./gradlew :1.21.11-fabric:publishToMavenLocal --no-daemon --stacktrace
